@@ -21,7 +21,8 @@
             :key="`${file.name}-${file.lastModified}`"
             class="transition-colors hover:bg-slate-50"
           >
-            <td class="max-w-xs truncate px-6 py-4 font-medium text-slate-900">
+            <td class="max-w-xs truncate px-6 py-4 font-medium text-slate-900"
+              @click="handleSelectFile(file)">
               {{ file.name }}
             </td>
             <td class="whitespace-nowrap px-6 py-4 text-slate-500">
@@ -50,9 +51,16 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'remove': [number]
+  'selectFile': [File]
 }>()
 
 function removeFile(index: number) {
   emit('remove', index)
 }
+
+function handleSelectFile(file: File) {
+  emit('selectFile', file)
+}
+
+
 </script>

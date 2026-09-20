@@ -26,10 +26,11 @@
           </div>
         </div>
         <div v-if="files.length !== 0">
-            <FileTable :files="files" @remove="handleRemove" />
+            <FileTable :files="files" @selectFile="handleShowDetails" @remove="handleRemove" />
         </div>
       </section>
     </div>
+    <FileDetails :file="showDetails" @close="handleClose"/>
   </main>
 </template>
 
@@ -37,7 +38,10 @@
 import { ref } from 'vue';
 import DropZone from '@/components/DropZone.vue';
 import FileTable from '@/components/FileTable.vue';
+import FileDetails from '@/components/FileDetails.vue';
+
 const files = ref<File[]>([])
+const showDetails = ref<File | null>(null)
 
 function handleRemove(index: number) {
   files.value.splice(index, 1)
@@ -45,6 +49,14 @@ function handleRemove(index: number) {
 
 function handleSelectedFiles(newFiles: File[]) {
   files.value = newFiles
+}
+
+function handleShowDetails(file: File) {
+  showDetails.value = file
+}
+
+function handleClose() {
+  showDetails.value = null
 }
 
 </script>

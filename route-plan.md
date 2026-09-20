@@ -32,16 +32,24 @@ Frontend Vue 3 (Composition API) + Tailwind v4 + shadcn-vue que sirva de interfa
    - Verificación: descarga funciona en ambos casos (texto corto y largo) y los errores se muestran.
 
 ## Progreso
+**Estimación actual: 30%** — la interfaz de selección está empezada, pero todavía no existe el flujo contra la API.
+
 - [x] **Fase 1 — Setup** Tailwind v4 + shadcn-vue (`button` + `progress` instalados, `@/lib/utils` en su sitio, `pnpm build` pasa con `navicenter`, build 108ms)
   - Nota: el CLI de shadcn mal-colocó `utils.ts` en `src/lib/new-york-v4/lib/utils.ts`; se copió a `src/lib/utils.ts` y se borró la subcarpeta.
-- [ ] **Fase 2 — Dropzone + selección** (client validación 10 MB, drag & drop + input file)
-- [ ] **Fase 3 — Módulo api.ts** (submitFile, getJob, getResultUrl) + proxy
+- [~] **Fase 2 — Dropzone + selección**
+  - Hecho: selección mediante `<input type="file">`, drag & drop nativo, listado de archivos, eliminación y vista de detalles.
+  - Falta: validación de tamaño máximo de 10 MB, validación consistente de tipo y mensajes de error.
+- [~] **Fase 3 — Módulo `api.ts` + proxy**
+  - Hecho: proxy de Vite configurado para `/alive`, `/ocr`, `/jobs` y `/results`.
+  - Falta: crear `src/api.ts` con `submitFile`, `getJob` y `getResultUrl`.
 - [ ] **Fase 4 — Envío + polling de estado**
+  - Falta: conectar el botón/acción de envío, manejar `job_id`, consultar el estado periódicamente y limpiar el polling.
 - [ ] **Fase 5 — Resultado + descargar + errores**
+  - Falta: mostrar el resultado, descargar texto corto o resultado largo, y gestionar errores HTTP 413 y errores del job.
 
 ## Riesgos / prerequisitos
 - Backend `tiny-ocr` corriendo en `:3000` y **PocketBase en `:8090`** (el flujo async lo necesita).
 - El setup de shadcn-vue + Tailwind v4 es lo más delicado; seguir la doc oficial al pie de la letra.
 
 ## Siguiente paso
-Fase 1: instalar Tailwind v4 + shadcn-vue y verificar que el dev server compila con estilos.
+Terminar la Fase 2 con validación de archivos y después implementar la Fase 3 (`src/api.ts`); el proxy ya está configurado.
