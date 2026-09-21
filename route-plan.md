@@ -32,24 +32,36 @@ Frontend Vue 3 (Composition API) + Tailwind v4 + shadcn-vue que sirva de interfa
    - Verificación: descarga funciona en ambos casos (texto corto y largo) y los errores se muestran.
 
 ## Progreso
-**Estimación actual: 30%** — la interfaz de selección está empezada, pero todavía no existe el flujo contra la API.
+**Estimación actual: 70%** — el flujo principal de subida y polling ya está implementado; faltan los resultados y la verificación con el backend real.
 
 - [x] **Fase 1 — Setup** Tailwind v4 + shadcn-vue (`button` + `progress` instalados, `@/lib/utils` en su sitio, `pnpm build` pasa con `navicenter`, build 108ms)
   - Nota: el CLI de shadcn mal-colocó `utils.ts` en `src/lib/new-york-v4/lib/utils.ts`; se copió a `src/lib/utils.ts` y se borró la subcarpeta.
-- [~] **Fase 2 — Dropzone + selección**
-  - Hecho: selección mediante `<input type="file">`, drag & drop nativo, listado de archivos, eliminación y vista de detalles.
-  - Falta: validación de tamaño máximo de 10 MB, validación consistente de tipo y mensajes de error.
-- [~] **Fase 3 — Módulo `api.ts` + proxy**
+- [x] **Fase 2 — Dropzone + selección**
+  - Hecho: selección mediante `<input type="file">`, drag & drop nativo, listado de archivos, eliminación, vista de detalles y validación de PDF/imágenes de hasta 10 MB con mensajes de error.
+- [x] **Fase 3 — Módulo `api.ts` + proxy**
   - Hecho: proxy de Vite configurado para `/alive`, `/ocr`, `/jobs` y `/results`.
-  - Falta: crear `src/api.ts` con `submitFile`, `getJob` y `getResultUrl`.
-- [ ] **Fase 4 — Envío + polling de estado**
-  - Falta: conectar el botón/acción de envío, manejar `job_id`, consultar el estado periódicamente y limpiar el polling.
-- [ ] **Fase 5 — Resultado + descargar + errores**
-  - Falta: mostrar el resultado, descargar texto corto o resultado largo, y gestionar errores HTTP 413 y errores del job.
+  - Hecho: `src/api.ts` con `submitFile`, `getJob` y `getResultUrl`.
+- [~] **Fase 4 — Envío + polling de estado**
+  - Hecho: `src/composables/useOcr.ts` coordina la subida, guarda el job, consulta el estado cada 2 segundos y cancela el polling al desmontar el componente.
+  - Hecho: `Layout.vue` incluye el botón de procesamiento y muestra `starting`, `processing` y `done`.
+  - Pendiente: verificar el flujo completo contra el backend real y revisar el contrato del campo multipart (`file`).
+- [~] **Fase 5 — Resultado + descargar + errores**
+  - Hecho: los errores de subida, consulta y procesamiento se muestran en la interfaz.
+  - Falta: mostrar el texto OCR cuando el job devuelve `text`.
+  - Falta: añadir descarga del texto corto mediante `Blob`.
+  - Falta: añadir descarga/enlace para resultados largos mediante `getResultUrl`.
+  - Falta: mostrar detalles de progreso (`pages_processed`, `total_pages`, `avg_score`).
+
+## Pendientes concretos
+1. Probar `POST /ocr/async` y el polling con el backend y PocketBase activos.
+2. Mostrar el resultado OCR en `Layout.vue`.
+3. Añadir descarga para respuestas con `text` y para respuestas con `result_path`.
+4. Mostrar progreso y metadatos del job.
+5. Decidir si el botón procesa solo el primer archivo o si se implementa una cola para varios archivos.
 
 ## Riesgos / prerequisitos
 - Backend `tiny-ocr` corriendo en `:3000` y **PocketBase en `:8090`** (el flujo async lo necesita).
 - El setup de shadcn-vue + Tailwind v4 es lo más delicado; seguir la doc oficial al pie de la letra.
 
 ## Siguiente paso
-Terminar la Fase 2 con validación de archivos y después implementar la Fase 3 (`src/api.ts`); el proxy ya está configurado.
+Probar el flujo actual contra el backend real; después implementar la visualización y descarga del resultado OCR.
