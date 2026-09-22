@@ -4,9 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "dev": "bun run build && bun --watch backend/index.ts",
+    "dev:frontend": "vite --config frontend/vite.config.ts",
+    "build": "vue-tsc -p frontend/tsconfig.json && tsc -p tsconfig.node.json && vite build --config frontend/vite.config.ts",
+    "start": "bun backend/index.ts",
+    "test": "bun test backend/app.test.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:live": "OCR_LIVE=1 playwright test --grep 'real backend'",
+    "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
     "@lucide/vue": "^1.47.0",
@@ -19,6 +24,8 @@
     "vue": "^3.5.42"
   },
   "devDependencies": {
+    "@types/bun": "latest",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.13.3",
     "@vitejs/plugin-vue": "^6.0.8",

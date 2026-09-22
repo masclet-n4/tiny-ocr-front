@@ -1,10 +1,11 @@
 import { onUnmounted, ref } from 'vue'
 import { getJob, submitFile, type Job } from '@/api'
 
-const POLLING_INTERVAL = 2000
+const POLLING_INTERVAL = 1000
 
 export function useOcr() {
   const job = ref<Job | null>(null)
+  const jobId = ref<string | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -29,7 +30,7 @@ export function useOcr() {
       }
 
       if (job.value.status === 'error') {
-        throw new Error(job.value.error || 'El procesamiento del archivo falló')
+        throw new Error(job.value.errors?.message || job.value.error || 'El procesamiento del archivo falló')
       }
 
       await wait(POLLING_INTERVAL)
@@ -41,9 +42,11 @@ export function useOcr() {
     loading.value = true
     error.value = null
     job.value = null
+    jobId.value = null
 
     try {
       const { job_id } = await submitFile(file)
+      jobId.value = job_id
       await poll(job_id)
     } catch (err) {
       if (!cancelled) {
@@ -60,6 +63,7 @@ export function useOcr() {
 
   return {
     job,
+    jobId,
     loading,
     error,
     upload,

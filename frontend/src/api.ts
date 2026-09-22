@@ -10,7 +10,9 @@ export type Job = {
   avg_score?: number
   text?: string
   result_path?: string
+  result_key?: string
   error?: string
+  errors?: { message?: string | null }
 }
 
 export async function submitFile(file: File): Promise<{ job_id: string }> {
