@@ -4,16 +4,18 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "bun run build && bun --watch backend/index.ts",
+    "dev": "bun run build && bun --watch backend/server.ts",
     "dev:frontend": "vite --config frontend/vite.config.ts",
     "build": "vue-tsc -p frontend/tsconfig.json && tsc -p tsconfig.node.json && vite build --config frontend/vite.config.ts",
-    "start": "bun backend/index.ts",
-    "test": "bun test backend/app.test.ts",
+    "start": "bun backend/server.ts",
+    "test": "bun test backend/tests/*.test.ts",
     "test:e2e": "playwright test",
     "test:e2e:live": "OCR_LIVE=1 playwright test --grep 'real backend'",
     "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1137.0",
+    "@aws-sdk/s3-request-presigner": "^3.1137.0",
     "@lucide/vue": "^1.47.0",
     "@vueuse/core": "^15.0.0",
     "class-variance-authority": "^0.7.1",

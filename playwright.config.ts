@@ -17,7 +17,7 @@ export default defineConfig({
     { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
   ],
   webServer: process.env.E2E_BASE_URL ? undefined : {
-    command: 'bun run build && PORT=5175 bun backend/index.ts',
+    command: 'bun run build && PORT=5175 bun backend/server.ts',
     url: 'http://127.0.0.1:5175',
     reuseExistingServer: !process.env.CI,
   },

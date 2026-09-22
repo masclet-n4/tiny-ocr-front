@@ -2,7 +2,8 @@ import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { createApp } from './app'
+import { createApp } from '../http/app'
+import { validateJobId, validateResultKey } from '../features/results/validation'
 
 describe('Bun server', () => {
   let staticRoot: string
@@ -85,6 +86,71 @@ describe('Bun server', () => {
 
     expect((await app(new Request('http://localhost/ocr/async'))).status).toBe(405)
     expect((await app(new Request('http://localhost/jobs/job-1', { method: 'DELETE' }))).status).toBe(405)
-    expect((await app(new Request('http://localhost/results/job-1.txt'))).status).toBe(200)
+    expect((await app(new Request('http://localhost/results/job-1.txt'))).status).toBe(503)
   })
+
+  test('streams a completed result through Bun', async () => {
+    const app = createApp({
+      staticRoot,
+      ocrServiceUrl: 'http://python:3000',
+      jobFetchImpl: async () => Response.json({
+        status: 'done',
+        result_key: 'job-123.txt',
+      }),
+      createDownloadUrl: async (key, filename) => {
+        expect(key).toBe('job-123.txt')
+        expect(filename).toBe('job-123.txt')
+        return 'http://rustfs.test/signed'
+      },
+      resultFetchImpl: async (url) => {
+        expect(url).toBe('http://rustfs.test/signed')
+        return new Response('OCR result')
+      },
+    })
+
+    const response = await app(new Request('http://localhost/results/job-123.txt'))
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toBe('text/plain; charset=utf-8')
+    expect(response.headers.get('content-disposition')).toBe('attachment; filename="job-123.txt"')
+    expect(response.headers.get('cache-control')).toBe('no-store')
+    expect(await response.text()).toBe('OCR result')
+  })
+
+  test('returns 502 when RustFS cannot serve the signed result', async () => {
+    const app = createApp({
+      staticRoot,
+      jobFetchImpl: async () => Response.json({
+        status: 'done',
+        result_key: 'job-123.txt',
+      }),
+      createDownloadUrl: async () => 'http://rustfs.test/signed',
+      resultFetchImpl: async () => new Response('not found', { status: 404 }),
+    })
+
+    const response = await app(new Request('http://localhost/results/job-123.txt'))
+
+    expect(response.status).toBe(502)
+    expect(await response.json()).toEqual({
+      error: 'No se pudo descargar el resultado desde RustFS',
+    })
+  })
+
+  test('accepts only safe job ids', () => {
+    expect(validateJobId('abc123')).toBe(true)
+    expect(validateJobId('job_123-456')).toBe(true)
+    expect(validateJobId('../secret')).toBe(false)
+    expect(validateJobId('job/123')).toBe(false)
+    expect(validateJobId('')).toBe(false)
+  })
+
+  test('accepts only the result belonging to the requested job', () => {
+    expect(validateResultKey('abc123', 'abc123.txt')).toBe(true)
+    expect(validateResultKey('abc123', 'other-job.txt')).toBe(false)
+    expect(validateResultKey('abc123', '../secret.txt')).toBe(false)
+    expect(validateResultKey('abc123', '/abc123.txt')).toBe(false)
+    expect(validateResultKey('abc123', 'abc123.pdf')).toBe(false)
+    expect(validateResultKey('abc123', null)).toBe(false)
+  })
+
 })

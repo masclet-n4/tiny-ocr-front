@@ -189,14 +189,21 @@ test('stored result downloads through the known endpoint and reports missing fil
   expect(Buffer.concat(chunks).toString()).toBe('Stored OCR result')
 })
 
-test('RustFS-only result explains the missing download integration', async ({ page }) => {
+test('RustFS-only result enables the backend download', async ({ page }) => {
   await mockJob(page, { status: 'done', result_key: 'test-job.txt' })
+  await page.route('**/results/test-job.txt', route => route.fulfill({
+    contentType: 'text/plain',
+    body: 'Stored OCR result',
+  }))
   await page.goto('/')
   await selectPdf(page)
   await page.getByRole('button', { name: 'Procesar archivo' }).click()
   await expect(page.getByText('100%', { exact: true })).toBeVisible()
-  await expect(page.getByText(/Resultado guardado en RustFS/)).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Descargar' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Descargar' })).toBeVisible()
+  const download = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Descargar' }).click()
+  const result = await download
+  expect(result.suggestedFilename()).toBe('sample.txt')
 })
 
 test('drag and drop selects a file', async ({ page }) => {

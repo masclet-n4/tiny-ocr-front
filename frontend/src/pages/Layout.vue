@@ -102,7 +102,7 @@
                     <p v-else role="status" class="text-slate-600">
                         {{
                             job?.result_key
-                                ? "Resultado guardado en RustFS. La descarga estará disponible cuando se conecte el backend de descargas."
+                                ? "Resultado listo para descargar."
                                 : "El servicio no ha proporcionado un resultado descargable."
                         }}
                     </p>
@@ -140,7 +140,7 @@ const downloadError = ref<string | null>(null);
 const canDownload = computed(
     () =>
         typeof job.value?.text === "string" ||
-        Boolean(job.value?.result_path && jobId.value),
+        Boolean(job.value?.result_key && jobId.value),
 );
 
 const computedProgress = computed(() => {
